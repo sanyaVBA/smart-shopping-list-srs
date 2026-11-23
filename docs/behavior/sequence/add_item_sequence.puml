@@ -1,0 +1,35 @@
+@startuml Add_Item_Sequence
+actor "Пользователь" as User
+participant "Интерфейс\n(index.html)" as UI
+participant "Контроллер\n(script.js)" as Controller
+participant "Сервис товаров" as ItemService
+database "База данных" as DB
+
+User -> UI: Вводит данные товара\n(название, количество, категория)
+activate UI
+UI -> Controller: POST /api/items\n{name, quantity, category_id}
+activate Controller
+Controller -> ItemService: createItem(itemData)
+activate ItemService
+ItemService -> ItemService: validateItemData(itemData)
+
+alt Данные валидны
+  ItemService -> DB: INSERT INTO Items\n(name, quantity, category_id)
+  activate DB
+  DB --> ItemService: item_id
+  deactivate DB
+  ItemService --> Controller: SuccessResponse(item_id)
+  Controller --> UI: 201 Created\n{item_id, message}
+  UI -> UI: Показать уведомление "Товар добавлен"
+  UI -> UI: Обновить список покупок
+  UI --> User: Отобразить новый товар в списке
+else Данные невалидны
+  ItemService --> Controller: ErrorResponse("Неверные данные")
+  Controller --> UI: 400 Bad Request\n{error_message}
+  UI --> User: Показать ошибку валидации
+end
+
+deactivate ItemService
+deactivate Controller
+deactivate UI
+@enduml
