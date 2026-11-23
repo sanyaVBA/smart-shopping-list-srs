@@ -1,0 +1,37 @@
+@startuml Use_Case_Diagram
+left to right direction
+
+actor "Пользователь" as User
+
+rectangle "Умный список покупок" {
+  usecase "Добавление товара" as AddItem
+  usecase "Отметка товара как купленного" as BuyItem
+  usecase "Редактирование товара" as EditItem
+  usecase "Удаление товара" as DeleteItem
+  usecase "Просмотр списка покупок" as ViewItems
+  usecase "Фильтрация по категориям" as FilterItems
+  usecase "Поиск товара" as SearchItem
+  usecase "Сортировка товаров" as SortItems
+  usecase "Валидация данных" as ValidateData
+  usecase "Автосохранение изменений" as AutoSave
+
+  ' include: обязательная часть сценария
+  AddItem ..> ValidateData : <<include>>
+  EditItem ..> ValidateData : <<include>>
+  AddItem ..> AutoSave : <<include>>
+  EditItem ..> AutoSave : <<include>>
+  BuyItem ..> AutoSave : <<include>>
+  DeleteItem ..> AutoSave : <<include>>
+
+  ' extend: необязательное расширение
+  FilterItems ..> ViewItems : <<extend>>
+  SearchItem ..> ViewItems : <<extend>>
+  SortItems ..> ViewItems : <<extend>>
+}
+
+User -- AddItem
+User -- BuyItem
+User -- EditItem
+User -- DeleteItem
+User -- ViewItems
+@enduml
