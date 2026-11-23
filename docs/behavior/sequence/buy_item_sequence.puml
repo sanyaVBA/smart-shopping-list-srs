@@ -1,0 +1,38 @@
+@startuml Buy_Item_Sequence
+actor "Пользователь" as User
+participant "Интерфейс" as UI
+participant "Контроллер" as Controller
+participant "Сервис товаров" as ItemService
+database "База данных" as DB
+participant "Сервис уведомлений" as NotificationService
+
+User -> UI: Ставит галочку\nнапротив товара
+activate UI
+UI -> Controller: PATCH /api/items/{id}\n{status: "bought"}
+activate Controller
+Controller -> ItemService: updateItemStatus(item_id, "bought")
+activate ItemService
+ItemService -> DB: UPDATE Items\nSET status = 'bought'\nWHERE item_id = ?
+activate DB
+DB --> ItemService: rows_affected
+deactivate DB
+
+ItemService -> ItemService: checkIfAllItemsBought(list_id)
+
+alt Все товары списка куплены
+  ItemService -> NotificationService: notifyListCompleted(list_id)
+  activate NotificationService
+  NotificationService --> ItemService: notification_sent
+  deactivate NotificationService
+end
+
+ItemService --> Controller: SuccessResponse()
+deactivate ItemService
+Controller --> UI: 200 OK
+deactivate Controller
+
+UI -> UI: Визуально отметить товар\n(зачёркивание, серый цвет)
+UI -> UI: Обновить счётчик купленного
+UI --> User: Показать, что товар куплен
+deactivate UI
+@enduml
