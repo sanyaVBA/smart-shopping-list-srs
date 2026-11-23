@@ -1,0 +1,28 @@
+@startuml Filter_Items_Sequence
+actor "Пользователь" as User
+participant "Интерфейс" as UI
+participant "Контроллер" as Controller
+participant "Сервис товаров" as ItemService
+database "База данных" as DB
+
+User -> UI: Выбирает категорию\nдля фильтрации
+activate UI
+UI -> Controller: GET /api/items?category={category_id}
+activate Controller
+Controller -> ItemService: getItemsByCategory(category_id)
+activate ItemService
+ItemService -> DB: SELECT * FROM Items i\nJOIN Item_Categories ic ON i.item_id = ic.item_id\nWHERE ic.category_id = ?
+activate DB
+DB --> ItemService: items_list
+deactivate DB
+ItemService -> ItemService: formatItemsForDisplay(items_list)
+ItemService --> Controller: ItemsListResponse(items)
+deactivate ItemService
+Controller --> UI: 200 OK\n{items_array}
+deactivate Controller
+
+UI -> UI: Очистить текущий список
+UI -> UI: Отобразить отфильтрованные товары
+UI --> User: Показать только товары\nвыбранной категории
+deactivate UI
+@enduml
